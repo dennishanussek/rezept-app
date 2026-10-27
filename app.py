@@ -68,7 +68,7 @@ with tab1:
         if st.button("🚀 Nährwerte, Zutaten & Anleitung auslesen", key="btn_t1"):
             with st.spinner("Analysiere Yazio-Daten..."):
                 genai.configure(api_key=api_key)
-                model = genai.GenerativeModel('gemini-1.5-flash')
+                model = genai.GenerativeModel('gemini-2.5-flash')
                 
                 # Erweiterter Prompt für Titel, Nährwerte pro Portion & Anleitung
                 prompt = """
