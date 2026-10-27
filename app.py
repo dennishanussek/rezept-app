@@ -68,9 +68,8 @@ with tab1:
         if st.button("🚀 Nährwerte, Zutaten & Anleitung auslesen", key="btn_t1"):
             with st.spinner("Analysiere Yazio-Daten..."):
                 genai.configure(api_key=api_key)
-                model = genai.GenerativeModel('gemini-2.5-flash')
+                model = genai.GenerativeModel('gemini-3.8-flash')
                 
-                # Erweiterter Prompt für Titel, Nährwerte pro Portion & Anleitung
                 prompt = """
                 Analysiere diesen Yazio Screenshot (Mahlzeit oder Rezept).
                 Extrahiere die Daten streng im folgenden JSON Format:
@@ -90,7 +89,6 @@ with tab1:
                     response = model.generate_content([prompt, image])
                     recipe_data = json.loads(response.text.replace("```json", "").replace("```", "").strip())
                     
-                    # Titel-Priorität: Eingabe > erkannt im Bild > Fallback
                     if custom_title:
                         recipe_data["titel"] = custom_title
                     elif not recipe_data.get("titel"):
@@ -115,7 +113,6 @@ with tab1:
 
         portions = st.slider("Für wie viele Personen kocht ihr meistens?", min_value=1, max_value=6, value=2, key="p_t1")
         
-        # Automatisch erkannte Anleitung als Standard im Notizfeld eintragen
         default_notes = rec.get("anleitung", "")
         notes = st.text_area("Zubereitungshinweise & Notizen (aus Yazio übernommen):", value=default_notes, placeholder="z.B. Herdstufe 7...", key="notes_t1")
 
@@ -154,7 +151,7 @@ with tab2:
         else:
             with st.spinner("Analysiere Reel..."):
                 genai.configure(api_key=api_key_ig)
-                model = genai.GenerativeModel('gemini-1.5-flash')
+                model = genai.GenerativeModel('gemini-3.8-flash')
                 ig_prompt = f"""
                 Analysiere dieses Instagram Koch-Reel (Link: {reel_link}, Text: {reel_caption}). 
                 Extrahiere das Rezept gerechnet auf 1 PORTION im JSON-Format:
@@ -234,7 +231,6 @@ with tab3:
         ingredient_search = st.text_input("Nach Name oder Zutat suchen...", "")
         st.markdown("---")
         
-        # Filteranwendung
         filtered_indices = []
         for orig_idx, r in enumerate(all_recipes):
             if filter_mahlzeit != "Alle" and r.get('mahlzeit', 'Hauptmahlzeit') != filter_mahlzeit:
@@ -255,17 +251,14 @@ with tab3:
             for orig_idx in reversed(filtered_indices):
                 r = all_recipes[orig_idx]
                 
-                # NEU: Überschriften-Design mit 2 SPALTEN für Kalorien & Protein pro Portion
                 title_label = f"🍽️ {r['titel']}  |  🔥 {r['kalorien']} kcal  |  🥩 {r['protein']}g Protein (pro Port.)"
                 
                 with st.expander(title_label):
-                    # Bearbeitungs-Modus Umschaltung
                     edit_mode_key = f"edit_mode_{orig_idx}"
                     if edit_mode_key not in st.session_state:
                         st.session_state[edit_mode_key] = False
                         
                     if not st.session_state[edit_mode_key]:
-                        # --- NORMALE ANSICHT ---
                         view_portions = st.slider("Portionen umrechnen:", min_value=1, max_value=6, value=r.get('portions_base', 2), key=f"slider_{orig_idx}")
                         
                         cols = st.columns(4)
@@ -291,7 +284,7 @@ with tab3:
                         with c_btn2:
                             if st.button("💡 KI Protein-Booster", key=f"tip_btn_{orig_idx}"):
                                 with st.spinner("Generiere Tipps..."):
-                                    model = genai.GenerativeModel('gemini-1.5-flash')
+                                    model = genai.GenerativeModel('gemini-3.8-flash')
                                     tip_prompt = f"Hier ist ein Rezept: {json.dumps(r, ensure_ascii=False)}. Gib mir 2 kurze Protein-Booster oder Spar-Tipps auf Deutsch."
                                     try:
                                         tip_res = model.generate_content(tip_prompt)
@@ -299,7 +292,6 @@ with tab3:
                                     except Exception:
                                         st.error("Bitte gib im Tab 1 deinen API-Key ein.")
                     else:
-                        # --- BEARBEITUNGS-MODUS ---
                         st.markdown("#### ✏️ Rezept bearbeiten")
                         new_titel = st.text_input("Name:", value=r['titel'], key=f"e_title_{orig_idx}")
                         
@@ -354,7 +346,7 @@ with tab4:
         else:
             with st.spinner("Durchsuche eure Rezepte..."):
                 genai.configure(api_key=ai_key)
-                model = genai.GenerativeModel('gemini-1.5-flash')
+                model = genai.GenerativeModel('gemini-3.8-flash')
                 context_prompt = f"""
                 Du bist der persönliche Koch-Assistent für ein Paar, das High-Protein kocht. 
                 Hier ist ihre aktuelle Rezeptsammlung: {json.dumps(all_recipes, ensure_ascii=False)}
